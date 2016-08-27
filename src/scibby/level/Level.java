@@ -75,7 +75,11 @@ public abstract class Level extends Layer{
 
 		for(int y = 0; y < level.HEIGHT; y++){
 			for(int x = 0; x < level.WIDTH; x++){
-				tiles.get(x + y * WIDTH).render(x * TILE_SIZE, y * TILE_SIZE, g);
+				Tile tile = tiles.get(x + y * WIDTH);
+				if(tile != null){
+					tile.render(x * TILE_SIZE, y * TILE_SIZE, g);
+				}
+
 			}
 		}
 
@@ -105,7 +109,7 @@ public abstract class Level extends Layer{
 
 		for(int i = 0; i < mobs.size(); i++){
 			Mob mob = mobs.get(i);
-			int distance = Vector2i.getDistance(new Vector2i((int) e.x + e.width / 2, (int) e.y + e.height / 2),
+			double distance = Vector2i.getDistance(new Vector2i((int) e.x + e.width / 2, (int) e.y + e.height / 2),
 					new Vector2i((int) mob.x + mob.width / 2, (int) mob.y + mob.height / 2));
 			if(distance <= radius){
 				result.add(mob);
@@ -114,7 +118,7 @@ public abstract class Level extends Layer{
 
 		return result;
 	}
-	
+
 	public Mob getPlayer(){
 		return mobs.get(0);
 	}
@@ -150,6 +154,10 @@ public abstract class Level extends Layer{
 
 	public static Level getCurrentLevel(){
 		return level;
+	}
+	
+	public static int getLevelNumber(){
+		return currentLevel;
 	}
 
 	public Camera getCamera(){

@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import scibby.level.Level;
+import scibby.util.Vector2i;
 
 public abstract class Projectile extends Entity{
 
@@ -41,7 +42,7 @@ public abstract class Projectile extends Entity{
 
 	protected boolean outOfRange(){
 		double dist;
-		dist = Math.sqrt(Math.abs((x - xOrigin) * (x - xOrigin) + (y - yOrigin) * (y - yOrigin)));
+		dist = Vector2i.getDistance(new Vector2i((int) x, (int) y), new Vector2i(xOrigin, yOrigin));
 		if(dist > range) return true;
 		return false;
 	}

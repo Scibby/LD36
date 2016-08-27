@@ -23,10 +23,10 @@ public class Player extends Mob{
 	
 	private int health = 100;
 
-	private Animation walkDown = new Animation(8, Images.walkDown);
-	private Animation walkLeft = new Animation(4, Images.walkLeft);
-	private Animation walkUp = new Animation(8, Images.walkUp);
-	private Animation walkRight = new Animation(4, Images.walkRight);
+	private Animation walkDown = new Animation(8, Images.playerWalkDown);
+	private Animation walkLeft = new Animation(6, Images.playerWalkLeft);
+	private Animation walkUp = new Animation(8, Images.playerWalkUp);
+	private Animation walkRight = new Animation(6, Images.playerWalkRight);
 
 	public enum Direction{
 		UP, DOWN, LEFT, RIGHT;
@@ -111,13 +111,13 @@ public class Player extends Mob{
 	private void shoot(double angle){
 		if(rate <= 0){
 			if(facing == Direction.LEFT){
-				new Bullet((x + width / 2) - 20, (y + height / 2) + 8, 8, 8, angle, 600, this, Images.bullet);				
+				new Bullet((x + width / 2) - 20, (y + height / 2) + 8, 8, 8, angle, 2000, this, Images.bullet);				
 			}else if(facing == Direction.DOWN){
-				new Bullet((x + width / 2) - 20, (y + height / 2) - 8, 8, 8, angle, 600, this, Images.bullet);			
+				new Bullet((x + width / 2) - 20, (y + height / 2) - 8, 8, 8, angle, 2000, this, Images.bullet);			
 			}else if(facing == Direction.RIGHT){
-				new Bullet((x + width / 2) + 20, (y + height / 2) + 8, 8, 8, angle, 600, this, Images.bullet);				
+				new Bullet((x + width / 2) + 20, (y + height / 2) + 8, 8, 8, angle, 2000, this, Images.bullet);				
 			}else if(facing == Direction.UP){
-				new Bullet((x + width / 2) + 20, y, 8, 8, angle, 600, this, Images.bullet);				
+				new Bullet((x + width / 2) + 20, y, 8, 8, angle, 2000, this, Images.bullet);				
 			}
 			rate = Bullet.RATE_OF_FIRE;
 			System.out.println(angle);

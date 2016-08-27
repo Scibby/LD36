@@ -2,9 +2,9 @@ package scibby.util;
 
 public class Vector2i{
 
-	private int x;
+	public int x;
 
-	private int y;
+	public int y;
 
 	public Vector2i(){
 		set(0, 0);
@@ -42,8 +42,8 @@ public class Vector2i{
 		return this;
 	}
 	
-	public static int getDistance(Vector2i vec1, Vector2i vec2){
-		return (int) Math.sqrt(Math.abs((vec1.x - vec2.x) * (vec1.x - vec2.x) + (vec1.y - vec2.y) * (vec1.y - vec2.y)));
+	public static double getDistance(Vector2i vec1, Vector2i vec2){
+		return Math.sqrt(Math.abs((vec1.x - vec2.x) * (vec1.x - vec2.x) + (vec1.y - vec2.y) * (vec1.y - vec2.y)));
 	}
 	
 	public Vector2i set(int x, int y){
@@ -52,6 +52,7 @@ public class Vector2i{
 		return this;
 	}
 
+	@Deprecated
 	public int getX(){
 		return x;
 	}
@@ -61,6 +62,7 @@ public class Vector2i{
 		return this;
 	}
 
+	@Deprecated
 	public int getY(){
 		return y;
 	}

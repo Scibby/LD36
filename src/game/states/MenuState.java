@@ -26,9 +26,10 @@ public class MenuState extends State{
 			
 			@Override
 			public void onAction(){
+				clearLayers();
+				Game.getUI().clearUI();
 				Main.gameState.start();
 				GameStateManager.currentState = 1;
-				clearLayers();
 			}
 		});
 		
