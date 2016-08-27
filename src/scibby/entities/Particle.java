@@ -14,9 +14,13 @@ public class Particle extends Entity{
 	private Random random;
 
 	private int life;
+	
+	private Color color = Color.GRAY;
 
-	public Particle(double x, double y, int width, int height, int life){
+	public Particle(double x, double y, int width, int height, int life, Color color){
 		super(x, y, width, height);
+		this.color = color;
+		Level.getCurrentLevel().add(this);
 		random = new Random();
 		this.life = life + (random.nextInt(20) - 10);
 		xa = random.nextGaussian();
@@ -24,10 +28,10 @@ public class Particle extends Entity{
 		za = 2;
 	}
 
-	public Particle(double x, double y, int width, int height, int life, int amount){
-		this(x, y, width, height, life);
+	public Particle(double x, double y, int width, int height, int life, Color color, int amount){
+		this(x, y, width, height, life, color);
 		for(int i = 0; i < amount - 1; i++){
-			Level.getCurrentLevel().add(new Particle(x, y, width, height, life));
+			new Particle(x, y, width, height, life, color);
 		}
 	}
 
@@ -60,7 +64,7 @@ public class Particle extends Entity{
 
 	@Override
 	public void render(Graphics2D g){
-		g.setColor(Color.GRAY);
+		g.setColor(color);
 		g.fillRect((int) x, (int) ((int) y - z), width, height);
 	}
 

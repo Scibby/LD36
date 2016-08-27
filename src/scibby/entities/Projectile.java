@@ -8,7 +8,7 @@ import scibby.level.Level;
 public abstract class Projectile extends Entity{
 
 	protected int xOrigin, yOrigin;
-	protected int speed = 10;
+	protected int speed = 8;
 	protected Mob shooter;
 	protected double nx, ny;
 	protected double angle;

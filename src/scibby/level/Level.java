@@ -114,6 +114,10 @@ public abstract class Level extends Layer{
 
 		return result;
 	}
+	
+	public Mob getPlayer(){
+		return mobs.get(0);
+	}
 
 	public void add(Entity entity){
 		if(currentLevel == 0) return;
