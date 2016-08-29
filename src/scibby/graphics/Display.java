@@ -15,6 +15,8 @@ public class Display extends Canvas{
 
 	private int height;
 
+	private static Graphics2D g;
+
 	public Display(final int width, final int height, GameContainer gc){
 
 		this.width = width;
@@ -25,7 +27,7 @@ public class Display extends Canvas{
 		setPreferredSize(dim);
 		setMaximumSize(dim);
 	}
-
+	
 	public void render(){
 		BufferStrategy bs = this.getBufferStrategy();
 		if(bs == null){
@@ -35,13 +37,19 @@ public class Display extends Canvas{
 
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		
+		this.g = g;
+		
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, width, height);
-
+		
 		GameStateManager.getCurrentState().render(g);
 		
 		g.dispose();
 
 		bs.show();
+	}
+
+	public static Graphics2D getG(){
+		return g;
 	}
 }

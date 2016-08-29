@@ -1,9 +1,11 @@
 package game.entities.projectiles;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import game.entities.mobs.Player;
 import scibby.entities.Mob;
 import scibby.entities.Particle;
 import scibby.entities.Projectile;
@@ -22,28 +24,32 @@ public class Bullet extends Projectile{
 	@Override
 	public void tick(){
 		super.tick();
-
+		
 		time++;
 
 		if(time % 2 == 0){
 			Level.getCurrentLevel().add(new Particle(x + width / 2, y + height / 2, 5, 5, 30, new Color(0xffaa00), 1));
 		}
-		
+
 		if(isColliding(nx, ny)){
 			Level.getCurrentLevel().add(new Particle(x, y, 5, 5, 60, new Color(0xffaa00), 20));
 		}
-		
+
 		ArrayList<Mob> close = Level.getCurrentLevel().getMobsInRadius(this, 32);
 		if(!close.isEmpty()){
 			for(int i = 0; i < close.size(); i++){
 				if(close.get(i).equals(shooter)){
 					continue;
 				}
-				close.get(i).remove();
+				if(shooter instanceof Player){
+					((Player) shooter).hits++;
+				}
+				close.get(i).health -= 20;
+				remove();
 				Level.getCurrentLevel().add(new Particle(x, y, 6, 6, 20, new Color(0x333333), 20));
 			}
 		}
-		
+
 	}
 
 }

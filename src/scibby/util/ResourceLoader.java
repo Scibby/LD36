@@ -46,6 +46,9 @@ public class ResourceLoader{
 		
 		int[] levelMap = new int[width * height];
 
+		System.out.println(width);
+		System.out.println(height);
+		
 		BufferedReader br = new BufferedReader(
 				new InputStreamReader(getClass().getResourceAsStream(LEVEL_LOCATION + levelName + LEVEL_ENDING)));
 

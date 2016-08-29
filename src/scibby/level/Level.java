@@ -1,9 +1,14 @@
 package scibby.level;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
+import game.levels.Node;
 import scibby.entities.Entity;
 import scibby.entities.Mob;
 import scibby.entities.Particle;
@@ -34,6 +39,8 @@ public abstract class Level extends Layer{
 
 	protected Camera camera;
 
+	public boolean isComplete = false;
+
 	public Level(int width, int height, int viewSizeX, int viewSizeY, int tileSize){
 		this.WIDTH = width;
 		this.HEIGHT = height;
@@ -42,7 +49,7 @@ public abstract class Level extends Layer{
 	}
 
 	public void tick(){
-
+		if(!isComplete) return;
 		for(int i = 0; i < mobs.size(); i++){
 			Mob m = mobs.get(i);
 
@@ -70,7 +77,12 @@ public abstract class Level extends Layer{
 	}
 
 	public void render(Graphics2D g){
-
+		if(!isComplete){
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("opium", Font.PLAIN, 35));
+			g.drawString("Creating level...", 400, 200);
+			return;
+		}
 		g.translate(-camera.camX, -camera.camY);
 
 		for(int y = 0; y < level.HEIGHT; y++){
@@ -82,7 +94,6 @@ public abstract class Level extends Layer{
 
 			}
 		}
-
 		for(Mob m : mobs){
 			m.render(g);
 			for(Projectile p : m.projectiles){
@@ -96,6 +107,8 @@ public abstract class Level extends Layer{
 		}
 		g.translate(camera.camX, camera.camY);
 	}
+
+	public void drawHallways(){}
 
 	@Override
 	public abstract void onEvent(Event event);
@@ -117,6 +130,101 @@ public abstract class Level extends Layer{
 		}
 
 		return result;
+	}
+
+	Vector2i oldVec;
+
+	public ArrayList<Node> AStarSearch(Vector2i start, Vector2i goal){
+		ArrayList<Node> openList = new ArrayList<Node>();
+		ArrayList<Node> closedList = new ArrayList<Node>();
+		Comparator<Node> sorter = new Comparator<Node>(){
+			@Override
+			public int compare(Node n0, Node n1){
+				if(n1.fCost < n0.fCost) return +1;
+				if(n1.fCost > n0.fCost) return -1;
+				return 0;
+			}
+		};
+
+		Node current = new Node(start, null, 0, Vector2i.getDistance(start, goal));
+		openList.add(current);
+
+		while(openList.size() > 0){
+			System.out.println(openList.size());
+
+			if(openList.size() > 400){
+				openList.clear();
+				closedList.clear();
+				System.exit(0);
+			}
+
+			Collections.sort(openList, sorter);
+			current = openList.get(0);
+			if(current.tile.equals(goal)){
+				ArrayList<Node> path = new ArrayList<Node>();
+				while(current.parent != null){
+					path.add(current);
+					current = current.parent;
+				}
+				openList.clear();
+				closedList.clear();
+				return path;
+			}
+
+			openList.remove(current);
+			closedList.add(current);
+			for(int i = 0; i < 9; i++){
+				if(i == 0) continue;
+				if(i == 2) continue;
+				if(i == 4) continue;
+				if(i == 6) continue;
+				if(i == 8) continue;
+
+				int x = current.tile.x;
+				int y = current.tile.y;
+
+				int xi = (i % 3) - 1;
+				int yi = (i / 3) - 1;
+
+				Vector2i vec = new Vector2i(x + xi, y + yi);
+
+				/*
+				 * int goTo = i; if(oldVec != null){ if(oldVec.equals(vec)){
+				 * //System.out.println(i); switch(i){ case 1: goTo = 7; break; case
+				 * 3: goTo = 5; break; case 5: goTo = 3; break; case 7: goTo = 1;
+				 * break; } } }
+				 */
+
+				Tile tile = getTile(x + xi, y + yi);
+
+				if(tile == null) continue;
+				if(!tile.canPath()) continue;
+
+				double gCost = current.gCost + Vector2i.getDistance(current.tile, vec);
+
+				double hCost = Vector2i.getDistance(vec, goal);
+				//if(i != goTo) gCost += 0.5;
+
+				Node node = new Node(vec, current, gCost, hCost);
+
+				if(vecInList(closedList, vec) && gCost >= node.gCost) continue;
+				if(!vecInList(openList, vec) || gCost < node.gCost) openList.add(node);
+				oldVec = vec;
+			}
+
+		}
+
+		openList.clear();
+		closedList.clear();
+		System.out.println("null");
+		return null;
+	}
+
+	private boolean vecInList(ArrayList<Node> list, Vector2i vec){
+		for(Node node : list){
+			if(node.tile.equals(vec)) return true;
+		}
+		return false;
 	}
 
 	public Mob getPlayer(){
@@ -143,6 +251,15 @@ public abstract class Level extends Layer{
 		}
 	}
 
+	public void clear(){
+		tiles.clear();
+		mobs.clear();
+		for(Mob mob : mobs){
+			mob.projectiles.clear();
+		}
+		particles.clear();
+	}
+
 	public static void addLevel(Level level){
 		levels.add(level);
 	}
@@ -155,7 +272,7 @@ public abstract class Level extends Layer{
 	public static Level getCurrentLevel(){
 		return level;
 	}
-	
+
 	public static int getLevelNumber(){
 		return currentLevel;
 	}

@@ -32,8 +32,8 @@ public class UIManager extends Layer{
 
 	@Override
 	public void onEvent(Event event){
-		for(UIPanel panel : panels){
-			panel.onEvent(event);
+		for(int i = 0; i < panels.size(); i++){
+			panels.get(i).onEvent(event);
 		}
 	}
 

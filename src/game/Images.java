@@ -14,6 +14,8 @@ public class Images{
 	private static SpriteSheet blockSheet;
 
 	private static SpriteSheet basicEnemySheet;
+	
+	public static SpriteSheet danhkSheet;
 
 	public static BufferedImage[] blocks = new BufferedImage[16];
 
@@ -37,6 +39,10 @@ public class Images{
 
 	public static BufferedImage[] basicEnemyWalkRight = new BufferedImage[4];
 
+	public static BufferedImage[] danhk = new BufferedImage[4];
+	
+	public static BufferedImage ankhProjectile;
+	
 	public static BufferedImage bullet;
 
 	private static ResourceLoader resLoader = new ResourceLoader();
@@ -45,6 +51,7 @@ public class Images{
 		playerSheet = new SpriteSheet("playerSpriteSheet");
 		blockSheet = new SpriteSheet("blockSpriteSheet");
 		basicEnemySheet = new SpriteSheet("basicEnemySheet");
+		danhkSheet = new SpriteSheet("dankh");
 
 		player = playerSheet.getImage(0, 0, 64, 64);
 
@@ -81,7 +88,14 @@ public class Images{
 		basicEnemyWalkDown[0] = basicEnemySheet.getImage(0, 0, 64, 64);
 		basicEnemyWalkDown[1] = basicEnemySheet.getImage(1, 0, 64, 64);
 
+		danhk[0] = danhkSheet.getImage(0, 0, 64, 64);
+		danhk[1] = danhkSheet.getImage(1, 0, 64, 64);
+		danhk[2] = danhkSheet.getImage(2, 0, 64, 64);
+		danhk[3] = danhkSheet.getImage(1, 0, 64, 64);
+		//danhk[4] = danhkSheet.getImage(0, 0, 64, 64);
+		
 		bullet = resLoader.loadImage("bullet");
+		ankhProjectile = resLoader.loadImage("ankhProjectile");
 
 		for(int y = 0; y < 4; y++){
 			for(int x = 0; x < 4; x++){

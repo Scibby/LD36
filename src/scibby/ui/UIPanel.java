@@ -2,12 +2,10 @@ package scibby.ui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import scibby.events.Event;
 import scibby.events.EventDispatcher;
-import scibby.events.EventHandler;
 import scibby.events.types.MousePressedEvent;
 import scibby.events.types.MouseReleasedEvent;
 import scibby.util.Vector2i;

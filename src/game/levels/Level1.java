@@ -5,98 +5,114 @@ import java.util.Random;
 
 import game.Images;
 import game.entities.mobs.Player;
+import game.entities.mobs.enemies.BasicEnemy;
+import game.entities.mobs.enemies.Dankh;
+import game.rooms.Door;
 import game.rooms.Room;
 import scibby.entities.Mob;
 import scibby.entities.Tile;
 import scibby.events.Event;
 import scibby.level.Level;
-import scibby.util.MathsUtil;
 import scibby.util.ResourceLoader;
+import scibby.util.Vector2i;
 
 public class Level1 extends Level{
+
+	ArrayList<Room> drawnRooms = new ArrayList<Room>();
+
+	Tile voidTile = new Tile(Images.blocks[0], false, false);
+	Tile voidTile2 = new Tile(Images.blocks[1], true, true);
+	Tile wallTile = new Tile(Images.blocks[1], true, false);
+	Tile wallCracked = new Tile(Images.blocks[2], true, false);
+	Tile wallMossy = new Tile(Images.blocks[3], true, false);
+	Tile path = new Tile(Images.blocks[0], false, true);
+	Tile door = new Tile(Images.blocks[0], false, true);
 
 	public Level1(int width, int height, int viewSizeX, int viewSizeY, int tileSize){
 		super(width, height, viewSizeX, viewSizeY, tileSize);
 		camera.useCamera = true;
 
+		isComplete = false;
+		
+		boolean spwanedPlayer = false;
+		
 		Random random = new Random();
 
 		ArrayList<int[]> rooms = new ArrayList<int[]>();
-		ArrayList<Room> drawnRooms = new ArrayList<Room>();
 
-		int[] roomArray1 = new ResourceLoader().loadLevel("room1", 10, 10);
-		int[] roomArray2 = new ResourceLoader().loadLevel("room2", 10, 10);
-
+		int[] roomArray1 = new ResourceLoader().loadLevel("room1", 16, 16);
+		int[] roomArray2 = new ResourceLoader().loadLevel("room2", 24, 24);
+		int[] roomArray3 = new ResourceLoader().loadLevel("room3", 16, 16);
+		int[] roomArray4 = new ResourceLoader().loadLevel("room4", 16, 16);
+		int[] roomArray5 = new ResourceLoader().loadLevel("room5", 8, 8);
+		
 		rooms.add(roomArray1);
 		rooms.add(roomArray2);
-
-		int numRooms = 25;
-
-		Tile voidTile = new Tile(Images.blocks[0], false);
-		Tile wallTile = new Tile(Images.blocks[1], true);
-		Tile wallCracked = new Tile(Images.blocks[2], true);
-		Tile wallMossy = new Tile(Images.blocks[3], false);
-
-		mobs.add(new Player(10 * 32, 7 * 32, 64, 64, null));
+		rooms.add(roomArray3);
+		rooms.add(roomArray4);
+		rooms.add(roomArray5);
+		
+		int numRooms = 10;
 
 		for(int i = 0; i < numRooms; i++){
 
-			int[] roomArray = rooms.get(random.nextInt(2));
+			int[] roomArray = rooms.get(random.nextInt(5));
 
-			int xOffset = random.nextInt(100 - 10) + 10;
-			int yOffset = random.nextInt(100 - 10) + 10;
+			int xOffset = random.nextInt(100 - 20) + 20;
+			int yOffset = random.nextInt(100 - 20) + 20;
 
-			xOffset = MathsUtil.clamp(xOffset, 0, 90);
-			yOffset = MathsUtil.clamp(yOffset, 0, 90);
-
-			Room room = new Room(xOffset, yOffset, 10, 10, roomArray, i);
-
+			Room room;
+			
+			if(roomArray.equals(roomArray1)){
+				room = new Room(xOffset, yOffset, 16, 16, roomArray, i);
+			}else if(roomArray.equals(roomArray2)){				
+				room = new Room(xOffset, yOffset, 24, 24, roomArray2, i);
+			}else if(roomArray.equals(roomArray3)){				
+				room = new Room(xOffset, yOffset, 16, 16, roomArray3, i);
+			}else if(roomArray.equals(roomArray4)){				
+				room = new Room(xOffset, yOffset, 16, 16, roomArray4, i);
+			}else{
+				room = new Room(xOffset, yOffset, 8, 8, roomArray5, i);
+			}
+			
 			drawnRooms.add(room);
 		}
-		int iterations = 500;
+		int iterations = 50;
 
 		boolean continueLoop = false;
+
 		do{
-			//Loop through all rooms
+
 			for(int q = 0; q < drawnRooms.size(); q++){
-				//Loop through the room pairings that haven't yet been checked
+
 				for(int j = q + 1; j < drawnRooms.size(); j++){
 
-					//Get the first room
 					Room r1 = drawnRooms.get(q);
-					//Get the second room
+
 					Room r2 = drawnRooms.get(j);
 
-					//Check room intersection on both axes
-					double xCollide = rangeIntersect(r1.x1, r1.x2, r2.x1, r2.x2);
-					double yCollide = rangeIntersect(r1.y1, r1.y2, r2.y1, r2.y2);
-					//If the rooms intersect on both axes
+					double xCollide = Room.roomIntersect(r1.x1, r1.x2, r2.x1, r2.x2);
+					double yCollide = Room.roomIntersect(r1.y1, r1.y2, r2.y1, r2.y2);
+
 					if(xCollide != 0 && yCollide != 0){
 
-						//There is a proven room intersection, noIntersection becomes false
 						continueLoop = true;
-						//Determine the smallest movement it would take for the rooms to no longer intersect
-						//If the distance moved for x would be shorter
+
 						if(Math.abs(xCollide) < Math.abs(yCollide)){
 
-							//Get distance to shift both rooms by splitting the returned collision amount in half
 							double shift1 = Math.floor(xCollide * 0.5);
 							double shift2 = -1 * (xCollide - shift1);
 
-							//Add shift amounts to both room's location data
 							r1.x1 += shift1;
 							r1.x2 += shift1;
 							r2.x1 += shift2;
 							r2.x2 += shift2;
 
-							//Else, the distance moved for y would be shorter or the same
 						}else{
 
-							//Get distance to shift both rooms by splitting the returned collision amount in half
 							double shift1 = Math.floor(yCollide * 0.5);
 							double shift2 = -1 * (yCollide - shift1);
 
-							//Add shift amounts to both room's location data
 							r1.y1 += shift1;
 							r1.y2 += shift1;
 							r2.y1 += shift2;
@@ -111,106 +127,154 @@ public class Level1 extends Level{
 			}
 		}while(continueLoop == true);
 
-		/*
-		 * do{ //Seperate rooms for(int i = 0; i < drawnRooms.size(); i++){
-		 * for(int j = i; j < drawnRooms.size(); j++){
-		 * //if(drawnRooms.get(j).equals(room1)) continue; Room room1 =
-		 * drawnRooms.get(i);
-		 * 
-		 * Room room2 = drawnRooms.get(j);
-		 * 
-		 * room1.collides(room2);
-		 * 
-		 * } } iterations--; System.out.println(iterations); }while(iterations >
-		 * 0);
-		 */
-
 		for(int i = 0; i < drawnRooms.size(); i++){
 			Room room = drawnRooms.get(i);
-			/*if(room.x1 < 0) continue;
-			if(room.x2 > WIDTH) continue;
-			if(room.y1 < 0) continue;
-			if(room.y2 > HEIGHT) continue;*/
+			/*
+			 * if(room.x1 < 0) continue; if(room.x2 > WIDTH) continue; if(room.y1 <
+			 * 0) continue; if(room.y2 > HEIGHT) continue;
+			 */
 			int[] array = room.getRoom();
-			for(int yy = 0; yy < 10; yy++){
+			int w = 0, h = 0;
+			if(array.equals(roomArray1)){
+				w = h = 16;
+			}else if(array.equals(roomArray2)){
+				w = h = 24;
+			}else if(array.equals(roomArray3)){
+				w = h = 16;
+			}else if(array.equals(roomArray4)){
+				w = h = 16;
+			}else if(array.equals(roomArray5)){
+				w = h = 8;
+			}
+			for(int yy = 0; yy < h; yy++){
 				int y = room.y1 + yy - 1;
-				for(int xx = 0; xx < 10; xx++){
+				for(int xx = 0; xx < w; xx++){
 					int x = room.x1 + xx - 1;
-					if(array[xx + yy * 10] == 0){
+					if(array[xx + yy * w] == 0){
 						tiles.put(x + y * WIDTH, voidTile);
-					}else if(array[xx + yy * 10] == 1){
+						if(!spwanedPlayer){
+							spwanedPlayer = true;
+							mobs.add(new Player(x * tileSize, y * tileSize, 64, 64, null));
+						}
+					}else if(array[xx + yy * w] == 1){
 						tiles.put(x + y * WIDTH, wallTile);
-					}else if(array[xx + yy * 10] == 2){
+					}else if(array[xx + yy * w] == 2){
 						tiles.put(x + y * WIDTH, wallCracked);
-					}else if(array[xx + yy * 10] == 3){
+					}else if(array[xx + yy * w] == 3){
 						tiles.put(x + y * WIDTH, wallMossy);
+					}else if(array[xx + yy * w] == 4){
+						tiles.put(x + y * WIDTH, door);
+					}else if(array[xx + yy * w] == 6){
+						
+						if(random.nextInt(5) < 2){
+							mobs.add(new Dankh(x * tileSize, y * tileSize, 64, 64, null));
+						}else{
+							mobs.add(new BasicEnemy(x * tileSize, y * tileSize, 64, 64, null));
+						}
+						
+						tiles.put(x + y * WIDTH, voidTile);
 					}
-
 				}
 			}
 		}
 		for(int y = 0; y < HEIGHT; y++){
 			for(int x = 0; x < WIDTH; x++){
 				if(tiles.get(x + y * WIDTH) == null){
-					tiles.put(x + y * WIDTH, voidTile);
+					tiles.put(x + y * WIDTH, voidTile2);
+				}
+			}
+		}
+
+		//Draw Hallways
+
+	}
+
+	public void drawHallways(){
+
+		for(int i = 0; i < drawnRooms.size(); i++){
+			Room room1 = drawnRooms.get(i);
+			for(int j = i + 1; j < drawnRooms.size(); j++){
+				Room room2 = drawnRooms.get(j);
+				if(room1.equals(room2)) continue;
+				if(room1.connectedTo.contains(room2)) continue;
+				for(int q = 0; q < room1.doors.size(); q++){
+					Door door1 = room1.doors.get(q);
+					for(int p = 0; p < room2.doors.size(); p++){
+						Door door2 = room2.doors.get(p);
+						door1.parent.connectedTo.add(door2.parent);
+						door2.parent.connectedTo.add(door1.parent);
+
+						ArrayList<Node> path;
+
+						path = AStarSearch(new Vector2i((door1.x + door1.parent.x1 - 1), (door1.y + door1.parent.y1 - 1)),
+								new Vector2i((door2.x + door2.parent.x1 - 1), (door2.y + door2.parent.y1 - 1)));
+
+						if(path == null) break;
+
+						for(int h = 1; h < path.size(); h++){
+							if(path.get(h) == null) continue;
+							System.err.println(path.size());
+							if(getTile(path.get(h).tile.x, path.get(h).tile.y) == this.path) break;
+							if(getTile(path.get(h).tile.x, path.get(h).tile.y) == this.door) continue;
+							tiles.put(path.get(h).tile.x + path.get(h).tile.y * WIDTH, this.path);
+						}
+					}
 				}
 			}
 		}
 		/*
-		 * int[] level1 = new ResourceLoader().loadLevel("level1", 30, 30);
+		 * for(int i = 0; i < drawnRooms.size(); i++){ for(int j = i + 1; j <
+		 * drawnRooms.size(); j++){ Door door1 = drawnRooms.get(i).getDoor();
+		 * //System.out.println((door1.x + door1.parent.x1) + ", " + (door1.y +
+		 * door1.parent.y1)); Door door2 = drawnRooms.get(j).getDoor();
+		 * //System.out.println((door2.x + door2.parent.x1) + ", " + (door2.y +
+		 * door2.parent.y1));
 		 * 
+		 * door1.connected = true; door2.connected = true;
 		 * 
+		 * if(door1.parent.connectedTo.contains(door2.parent)){ continue; }
+		 * door1.parent.connectedTo.add(door2.parent);
+		 * door2.parent.connectedTo.add(door1.parent);
 		 * 
-		 * mobs.add(new Player(10 * 32, 7 * 32, 64, 64, null)); mobs.add(new
-		 * BasicEnemy(18 * 32, 7 * 32, 64, 64, null)); for(int y = 0; y < height;
-		 * y++){ for(int x = 0; x < width; x++){ if(level1[x + y * WIDTH] == 0){
-		 * tiles.put(x + y * WIDTH, voidTile); }else if(level1[x + y * WIDTH] ==
-		 * 1){ tiles.put(x + y * WIDTH, wallTile); }else if(level1[x + y * WIDTH]
-		 * == 2){ tiles.put(x + y * WIDTH, wallCracked); }else if(level1[x + y *
-		 * WIDTH] == 3){ tiles.put(x + y * WIDTH, wallMossy); }
+		 * ArrayList<Node> path;
 		 * 
-		 * if(level1[x + y * WIDTH] == -1){ tiles.put(x + y * WIDTH, voidTile); }
+		 * path = AStarSearch(new Vector2i((door1.x + door1.parent.x1 - 1),
+		 * (door1.y + door1.parent.y1 - 1)), new Vector2i((door2.x +
+		 * door2.parent.x1 - 1), (door2.y + door2.parent.y1 - 1)));
+		 * 
+		 * if(path == null) break;
+		 * 
+		 * for(int q = 1; q < path.size(); q++){ if(path.get(q) == null) continue;
+		 * System.err.println(path.size()); if(getTile(path.get(q).tile.x,
+		 * path.get(q).tile.y) == this.path) break; if(getTile(path.get(q).tile.x,
+		 * path.get(q).tile.y) == this.wallMossy) break;
+		 * tiles.put(path.get(q).tile.x + path.get(q).tile.y * WIDTH, this.path);
+		 * 
+		 * }
+		 * 
 		 * } }
 		 */
-	}
 
-	private int rangeIntersect(int low1, int high1, int low2, int high2){
-		int min1 = Math.min(low1, high1);
-		int max1 = Math.max(low1, high1);
-		int min2 = Math.min(low2, high2);
-		int max2 = Math.max(low2, high2);
-		//if the ranges intersect
-		if((max1 >= min2) && (min1 <= max2)){
-			//calculate by how much the ranges intersect
-			int dist1 = max2 - min1;
-			int dist2 = max1 - min2;
-			//if dist2 is smaller
-			if(dist2 < dist1){
-				//that means range 0 must be shifted down to no longer intersect
-				return dist2 * -1;
-				//else, dist2 is larger or equal to dist1
-			}else{
-				//that means range 0 must be shifted up to no longer intersect
-				return dist1;
+		for(int yy = 0; yy < HEIGHT; yy++){
+			for(int xx = 0; xx < WIDTH; xx++){
+				Tile tile = getTile(xx, yy);
+				if(tile.isSolid()) continue;
+				if(!tile.equals(this.path)) continue;
+
+				for(int e = 0; e < 9; e++){
+					if(e == 4){
+						continue;
+					}
+					int xi = (e % 3) - 1;
+					int yi = (e / 3) - 1;
+					if(getTile((xx + xi), (yy + yi)).equals(this.path)) continue;
+					if(getTile((xx + xi), (yy + yi)).equals(this.door)) continue;
+					if(!getTile((xx + xi), (yy + yi)).canPath()) continue;
+					tiles.put((xx + xi) + (yy + yi) * WIDTH, this.wallTile);
+				}
 			}
-		}else{
-			return 0;
 		}
-	}
-	
-	public int getBiasedInt(int min, int max) {
-	    int rand = (int) (Math.random() * max);
-	    while (rand < min) {
-	        rand = (int) Math.random();
-	    }
-	    int mid = (max / 2) - (min / 2);
-	    int halfmid = mid / 2;
-	    if (rand > mid) {
-	        rand -= Math.random() * halfmid;
-	    } else {
-	        rand += Math.random() * halfmid;
-	    }
-	    return rand;
+		isComplete = true;
 	}
 
 	@Override

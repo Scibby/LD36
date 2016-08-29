@@ -11,9 +11,12 @@ public class Tile{
 
 	private boolean solid;
 	
-	public Tile(BufferedImage image, boolean solid){
+	private boolean canPath;
+	
+	public Tile(BufferedImage image, boolean solid, boolean canPath){
 		this.image = image;
 		this.solid = solid;
+		this.canPath = canPath;
 	}
 
 	public void render(int x, int y, Graphics2D g){
@@ -26,4 +29,7 @@ public class Tile{
 		return solid;
 	}
 
+	public boolean canPath(){
+		return canPath;
+	}
 }

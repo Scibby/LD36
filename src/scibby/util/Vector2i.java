@@ -46,6 +46,18 @@ public class Vector2i{
 		return Math.sqrt(Math.abs((vec1.x - vec2.x) * (vec1.x - vec2.x) + (vec1.y - vec2.y) * (vec1.y - vec2.y)));
 	}
 	
+	@Override
+	public boolean equals(Object obj){
+		
+		if(obj instanceof Vector2i){
+			Vector2i vec = (Vector2i) obj;
+			if(vec.x == x && vec.y == y){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public Vector2i set(int x, int y){
 		this.x = x;
 		this.y = y;

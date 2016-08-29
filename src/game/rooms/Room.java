@@ -1,8 +1,7 @@
 package game.rooms;
 
-import game.Main;
-import scibby.core.Game;
-import scibby.util.Vector2i;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Room{
 
@@ -15,6 +14,12 @@ public class Room{
 
 	private int id;
 
+	private int numOfDoors;
+
+	public ArrayList<Door> doors = new ArrayList<Door>();
+
+	public ArrayList<Room> connectedTo = new ArrayList<Room>();
+
 	public Room(int x, int y, int width, int height, int[] room, int id){
 		this.x1 = x - 1;
 		this.y1 = y - 1;
@@ -24,8 +29,15 @@ public class Room{
 		this.height = height;
 		this.room = room;
 		this.id = id;
-	}
 
+		for(int yy = 0; yy < height; yy++){
+			for(int xx = 0; xx < width; xx++){
+				if(room[xx + yy * width] == 4){
+					doors.add(new Door(xx, yy, this));
+				}
+			}
+		}
+	}
 
 	public int getWidth(){
 		return width;
@@ -39,64 +51,27 @@ public class Room{
 		return room;
 	}
 
-	/*public void collides(Room room){
+	public static int roomIntersect(int low1, int high1, int low2, int high2){
+		int min1 = Math.min(low1, high1);
+		int max1 = Math.max(low1, high1);
+		int min2 = Math.min(low2, high2);
+		int max2 = Math.max(low2, high2);
 
-		int xMove = 0, yMove = 0;
-
-		Vector2i a = new Vector2i(x * 16, y * 16), b = new Vector2i(a).add(width * 16).add(height * 16),
-				c = new Vector2i(room.x * 16, room.y * 16), d = new Vector2i(c).add(room.width * 16).add(room.height * 16);
-
-		if(hasInside(c.x, c.y)){
-			xMove = Math.abs(c.x - x);
-			yMove = Math.abs(c.y - y);
-
-			if(xMove != 0 && yMove != 0){
-
-				if(Math.abs(xMove) > Math.abs(yMove)){
-					double shift1 = Math.floor(xMove * 0.5);
-					double shift2 = -1 * (xMove - shift1);
-
-					a.x += shift1;
-					b.x += shift1;
-					c.x += shift2;
-					d.x += shift2;
-				}else{
-					double shift1 = Math.floor(yMove * 0.5);
-					double shift2 = -1 * (yMove - shift1);
-
-					System.out.println(a.x + ", " + a.y);
-					a.y += shift1;
-					System.err.println(a.x + ", " + a.y);
-					b.y += shift1;
-					c.y += shift2;
-					d.y += shift2;
-
-				}
-				System.out.println(x + ", " + y);
-				x = a.x;
-				y = a.y;
-				System.out.println(x + ", " + y);
-
-				room.x = c.x;
-				room.y = c.y;
+		if((max1 >= min2) && (min1 <= max2)){
+			int dist1 = max2 - min1;
+			int dist2 = max1 - min2;
+			if(dist2 < dist1){
+				return dist2 * -1;
+			}else{
+				return dist1;
 			}
+		}else{
+			return 0;
 		}
-
 	}
 
-	public boolean hasInside(int xp, int yp){
-		int w = this.width;
-		int h = this.height;
-		if((w | h) < 0) return false;
-
-		int x = this.x;
-		int y = this.y;
-
-		if(xp < x || yp < y) return false;
-		w += x;
-		h += y;
-
-		return ((w < x || w > xp) && (h < y || h > yp));
-	}*/
+	public Door getDoor(){
+		return doors.get(new Random().nextInt(doors.size()));
+	}
 
 }

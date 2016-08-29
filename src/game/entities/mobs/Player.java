@@ -6,7 +6,9 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 import game.Images;
+import game.Main;
 import game.entities.projectiles.Bullet;
+import game.states.GameState;
 import scibby.entities.Mob;
 import scibby.events.Event;
 import scibby.events.EventDispatcher;
@@ -16,17 +18,31 @@ import scibby.graphics.Animation;
 import scibby.input.Keyboard;
 import scibby.input.Mouse;
 import scibby.level.Level;
+import scibby.states.GameStateManager;
+import scibby.ui.components.UIProgressBar;
+import scibby.util.AudioPlayer;
 
 public class Player extends Mob{
 
 	private int speed = 5;
-	
-	private int health = 100;
+
+	public int health = 100;
+
+	private double shots = 0;
+
+	public double hits = 0;
+
+	public int accuracy = 0;
 
 	private Animation walkDown = new Animation(8, Images.playerWalkDown);
 	private Animation walkLeft = new Animation(6, Images.playerWalkLeft);
 	private Animation walkUp = new Animation(8, Images.playerWalkUp);
 	private Animation walkRight = new Animation(6, Images.playerWalkRight);
+
+	private AudioPlayer shootSFX = new AudioPlayer("shootEffect");
+
+	public boolean isInvincible = true;
+	public int invinsible;
 
 	public enum Direction{
 		UP, DOWN, LEFT, RIGHT;
@@ -47,26 +63,30 @@ public class Player extends Mob{
 		super.tick();
 
 		double xa = 0, ya = 0;
-		
+
 		if(Keyboard.isKeyPressed(KeyEvent.VK_W)){
 			ya -= speed;
 			walkUp.runAnimation();
 			facing = Direction.UP;
-		}
-		if(Keyboard.isKeyPressed(KeyEvent.VK_A)){
-			xa -= speed;
-			walkLeft.runAnimation();
-			facing = Direction.LEFT;
+			isInvincible = false;
 		}
 		if(Keyboard.isKeyPressed(KeyEvent.VK_S)){
 			ya += speed;
 			walkDown.runAnimation();
 			facing = Direction.DOWN;
+			isInvincible = false;
 		}
 		if(Keyboard.isKeyPressed(KeyEvent.VK_D)){
 			xa += speed;
 			walkRight.runAnimation();
 			facing = Direction.RIGHT;
+			isInvincible = false;
+		}
+		if(Keyboard.isKeyPressed(KeyEvent.VK_A)){
+			xa -= speed;
+			walkLeft.runAnimation();
+			facing = Direction.LEFT;
+			isInvincible = false;
 		}
 
 		move(xa, ya);
@@ -84,6 +104,26 @@ public class Player extends Mob{
 		if(y + height >= Level.getCurrentLevel().getHeight() * Level.getCurrentLevel().getTileSize()){
 			y = Level.getCurrentLevel().getHeight() * Level.getCurrentLevel().getTileSize() - height;
 		}
+
+		UIProgressBar healthBar = GameState.healthBar;
+		healthBar.setValue(health);
+
+		System.out.println(isInvincible);
+		if(!isInvincible){
+			invinsible--;
+		}
+
+		if(health <= 0){
+			Main.gameOverState.start();
+			GameStateManager.currentState = 2;
+		}
+
+		GameState.shots.text = "Shots: " + shots;
+		GameState.hits.text = "Hits: " + hits;
+		if(hits != 0) accuracy = (int) (hits / shots * 100);
+
+		GameState.accuracy.text = "Accuracy: " + accuracy + "%";
+
 	}
 
 	private void updateShooting(){
@@ -97,30 +137,50 @@ public class Player extends Mob{
 
 		if(dir > (Math.PI / 4) && dir < (Math.PI / 4 * 3)){
 			facing = Direction.DOWN;
-		}else if(dir > -(Math.PI) && dir < -(Math.PI / 4 * 3)  || dir > (Math.PI / 4 * 3)){
+		}else if(dir > -(Math.PI) && dir < -(Math.PI / 4 * 3) || dir > (Math.PI / 4 * 3)){
 			facing = Direction.LEFT;
 		}else if(dir > -(Math.PI / 4) && dir < (Math.PI)){
 			facing = Direction.RIGHT;
 		}else if(dir > -(Math.PI / 4 * 3) && dir < -(Math.PI / 4)){
 			facing = Direction.UP;
 		}
-		
-		shoot(dir);
+
+		shoot();
 	}
 
-	private void shoot(double angle){
+	private void shoot(){
+		int mx = Mouse.getX();
+		int my = Mouse.getY();
+		double nx = 0, ny = 0;
+		double dx, dy;
 		if(rate <= 0){
 			if(facing == Direction.LEFT){
-				new Bullet((x + width / 2) - 20, (y + height / 2) + 8, 8, 8, angle, 2000, this, Images.bullet);				
+				nx = (x + width / 2) - 20;
+				ny = (y + height / 2) + 8;
 			}else if(facing == Direction.DOWN){
-				new Bullet((x + width / 2) - 20, (y + height / 2) - 8, 8, 8, angle, 2000, this, Images.bullet);			
+				nx = (x + width / 2) - 20;
+				ny = (y + height / 2) - 8;
 			}else if(facing == Direction.RIGHT){
-				new Bullet((x + width / 2) + 20, (y + height / 2) + 8, 8, 8, angle, 2000, this, Images.bullet);				
+				nx = (x + width / 2) + 20;
+				ny = (y + height / 2) + 8;
 			}else if(facing == Direction.UP){
-				new Bullet((x + width / 2) + 20, y, 8, 8, angle, 2000, this, Images.bullet);				
+				nx = (x + width / 2) + 20;
+				ny = y + 8;
 			}
+
+			dx = mx - nx + Level.getCurrentLevel().getCamera().camX;
+			dy = my - ny + Level.getCurrentLevel().getCamera().camY;
+
+			double angle = Math.atan2(dy, dx);
+
+			new Bullet(nx, ny, 8, 8, angle, 2000, this, Images.bullet);
+
+			shootSFX.play();
+
+			shots++;
+
 			rate = Bullet.RATE_OF_FIRE;
-			System.out.println(angle);
+			//System.out.println(angle);
 		}
 	}
 
@@ -129,12 +189,13 @@ public class Player extends Mob{
 		EventDispatcher dispatcher = new EventDispatcher(event);
 		dispatcher.dispatch(Event.Type.MOUSE_PRESSED, (Event e) -> onMousePressedEvent((MousePressedEvent) e));
 		dispatcher.dispatch(Event.Type.MOUSE_RELEASED, (Event e) -> onMouseReleasedEvent((MouseReleasedEvent) e));
+		//isInvincible = false;
 	}
 
 	private boolean onMousePressedEvent(MousePressedEvent e){
 
 		if(e.getButton() == MouseEvent.BUTTON1){
-			shooting = true;
+			if(!isInvincible) shooting = true;
 			return true;
 		}
 
